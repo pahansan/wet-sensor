@@ -2,25 +2,44 @@
 
 #include "driver/ledc.h"
 #include "esp_err.h"
+#include "hal/ledc_types.h"
 
-#define PIN_R 33
-#define PIN_G 25
-#define PIN_B 26
+#define PIN_R_1 25
+#define PIN_G_1 26
+#define PIN_B_1 27
+
+#define PIN_R_2 17
+#define PIN_G_2 16
+#define PIN_B_2 4
 
 #define LEDC_MODE LEDC_LOW_SPEED_MODE
 #define LEDC_TIMER LEDC_TIMER_0
 #define LEDC_RES LEDC_TIMER_8_BIT
 #define LEDC_FREQ 5000
 
-void rgb_led_set(uint8_t r, uint8_t g, uint8_t b) {
-  ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_0, r));
-  ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_0));
+void rgb_led_set(uint8_t r, uint8_t g, uint8_t b, led_number_t number) {
+  switch (number) {
+  case LED_1:
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_0, r));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_0));
 
-  ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_1, g));
-  ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_1));
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_1, g));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_1));
 
-  ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_2, b));
-  ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_2));
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_2, b));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_2));
+    break;
+  case LED_2:
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_3, r));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_3));
+
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_4, g));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_4));
+
+    ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_5, b));
+    ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_5));
+    break;
+  }
 }
 
 void rgb_led_init(void) {
@@ -41,14 +60,25 @@ void rgb_led_init(void) {
   };
 
   c.channel = LEDC_CHANNEL_0;
-  c.gpio_num = PIN_R;
+  c.gpio_num = PIN_R_1;
   ESP_ERROR_CHECK(ledc_channel_config(&c));
   c.channel = LEDC_CHANNEL_1;
-  c.gpio_num = PIN_G;
+  c.gpio_num = PIN_G_1;
   ESP_ERROR_CHECK(ledc_channel_config(&c));
   c.channel = LEDC_CHANNEL_2;
-  c.gpio_num = PIN_B;
+  c.gpio_num = PIN_B_1;
   ESP_ERROR_CHECK(ledc_channel_config(&c));
 
-  rgb_led_set(0, 0, 0);
+  c.channel = LEDC_CHANNEL_3;
+  c.gpio_num = PIN_R_2;
+  ESP_ERROR_CHECK(ledc_channel_config(&c));
+  c.channel = LEDC_CHANNEL_4;
+  c.gpio_num = PIN_G_2;
+  ESP_ERROR_CHECK(ledc_channel_config(&c));
+  c.channel = LEDC_CHANNEL_5;
+  c.gpio_num = PIN_B_2;
+  ESP_ERROR_CHECK(ledc_channel_config(&c));
+
+  rgb_led_set(0, 0, 0, LED_1);
+  rgb_led_set(0, 0, 0, LED_2);
 }
