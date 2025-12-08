@@ -25,6 +25,7 @@ void raw_to_led(int raw, led_number_t number) {
   int cutted = cut(raw);
   if (cutted == -1) {
     rgb_led_set(0, 0, 255, number);
+    return;
   }
   int red_value = (int)((double)cutted * 0.15);
   rgb_led_set(red_value, 255 - red_value, 0, number);
