@@ -19,8 +19,6 @@ static int raw_to_percent(int raw) {
   int cut_raw;
   if (raw >= 2700) {
     cut_raw = 1700;
-  } else if (raw < 980) {
-    return 0;
   } else if (raw <= 1000) {
     cut_raw = 0;
   } else {

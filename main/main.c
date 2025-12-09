@@ -63,6 +63,7 @@ void app_main(void) {
   ESP_LOGI(TAG, "System ready");
 
   while (1) {
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    soil_control_update_leds();
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
