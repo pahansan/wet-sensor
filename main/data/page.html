@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Soil Moisture Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css?v=20251209" />
+    <script src="script.js?v=20251209" defer></script>
+</head>
+
+<body>
+    <div class="page">
+        <div class="card">
+            <header class="card-header">
+                <h1 class="title">Soil Moisture</h1>
+                <p class="subtitle">Monitor over Wi-Fi</p>
+            </header>
+
+            <section class="thresholds">
+                <div class="input-group">
+                    <label>Dry (Red) %:</label>
+                    <input type="number" id="threshold-red" min="0" max="100" value="20">
+                </div>
+                <div class="input-group">
+                    <label>Wet (Green) %:</label>
+                    <input type="number" id="threshold-green" min="0" max="100" value="80">
+                </div>
+                <button id="apply-thresholds" class="btn primary">Apply Thresholds</button>
+            </section>
+
+            <section class="sensor">
+                <h3>Sensor 1</h3>
+                <div class="controls">
+                    <label><input type="checkbox" id="sensor1-enable" checked> Enable Sensor</label>
+                    <label><input type="checkbox" id="led1-enable" checked> Enable LED</label>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="bar1"></div>
+                </div>
+                <div class="percent" id="percent1">--%</div>
+            </section>
+
+            <section class="sensor">
+                <h3>Sensor 2</h3>
+                <div class="controls">
+                    <label><input type="checkbox" id="sensor2-enable" checked> Enable Sensor</label>
+                    <label><input type="checkbox" id="led2-enable" checked> Enable LED</label>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="bar2"></div>
+                </div>
+                <div class="percent" id="percent2">--%</div>
+            </section>
+
+            <div id="status" class="status">Loading...</div>
+        </div>
+    </div>
+</body>
+
+</html>

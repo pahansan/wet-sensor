@@ -1,49 +1,68 @@
-#include "cap_soil.h"
-#include "rgb_led.h"
-
+#include "esp_event.h"
+#include "esp_log.h"
+#include "esp_netif.h"
+#include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include <stdio.h>
+#include "include/cap_soil.h"
+#include "include/rgb_led.h"
+#include "include/soil_control.h"
+#include "include/webserver.h"
+#include "nvs_flash.h"
 
-int cut(int raw) {
-  if (raw >= 2700)
-    return 1700;
-  if (raw < 980) {
-    return -1;
-  }
-  if (raw <= 1000)
-    return 0;
-  return raw - 1000;
-}
+static const char *TAG = "MAIN";
 
-double raw_to_voltage(int raw) { return (double)raw / 4095.0 * 3.3; }
-double raw_to_percent(int raw) { return (double)(1700 - cut(raw)) / 17.0; }
-int raw_to_green(int raw) { return (int)((double)(1700 - cut(raw)) * 0.15); }
-int raw_to_red(int raw) { return (int)((double)cut(raw) * 0.15); }
+#define WIFI_AP_SSID "SoilMonitor"
+#define WIFI_AP_PASSWORD "12345678"
+#define WIFI_AP_MAX_CONN 4
 
-void raw_to_led(int raw, led_number_t number) {
-  int cutted = cut(raw);
-  if (cutted == -1) {
-    rgb_led_set(0, 0, 255, number);
-    return;
-  }
-  int red_value = (int)((double)cutted * 0.15);
-  rgb_led_set(red_value, 255 - red_value, 0, number);
+static void wifi_init_softap(void) {
+  esp_netif_create_default_wifi_ap();
+
+  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+  wifi_config_t wifi_config = {
+      .ap =
+          {
+              .ssid = WIFI_AP_SSID,
+              .ssid_len = strlen(WIFI_AP_SSID),
+              .password = WIFI_AP_PASSWORD,
+              .max_connection = WIFI_AP_MAX_CONN,
+              .authmode = WIFI_AUTH_WPA_WPA2_PSK,
+          },
+  };
+  if (strlen(WIFI_AP_PASSWORD) == 0)
+    wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+
+  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
+  ESP_ERROR_CHECK(esp_wifi_start());
+
+  ESP_LOGI(TAG, "WiFi AP started: SSID=%s", WIFI_AP_SSID);
 }
 
 void app_main(void) {
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
+      ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ESP_ERROR_CHECK(nvs_flash_init());
+  }
+
+  ESP_ERROR_CHECK(esp_netif_init());
+  ESP_ERROR_CHECK(esp_event_loop_create_default());
+
   cap_soil_init();
   rgb_led_init();
+  soil_control_init();
+
+  wifi_init_softap();
+  start_webserver();
+
+  ESP_LOGI(TAG, "System ready");
 
   while (1) {
-    int raw = cap_soil_read_raw(CAP_SOIL_1);
-    printf("Capacitive soil %d Raw Data: %d, v: %f, %%: %f | ", CAP_SOIL_1, raw,
-           raw_to_voltage(raw), raw_to_percent(raw));
-    raw_to_led(raw, LED_1);
-    raw = cap_soil_read_raw(CAP_SOIL_2);
-    printf("Capacitive soil %d Raw Data: %d, v: %f, %%: %f\n", CAP_SOIL_2, raw,
-           raw_to_voltage(raw), raw_to_percent(raw));
-    raw_to_led(raw, LED_2);
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(5000));
   }
 }
